@@ -1,0 +1,92 @@
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    column-gap: 3px;
+    row-gap: 3px;
+}
+
+#picture {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: block;
+    object-position: center;
+    object-fit: cover;
+}
+
+/* width: 100%;
+aspect-ratio: 1 / 1;
+display: block;
+object-position: center;
+object-fit: contain; */
+.blur-load {
+    background-size: cover;
+    background-position: center;
+}
+
+
+/* All next styles for divs when user click on image */
+#overDiv {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9;
+    background-color: white;
+    opacity: 100%;
+    /* display: flex; */
+    position: fixed;
+    overflow: hidden;
+}
+
+#gridInOverDiv {
+    display: grid;
+    grid-template-columns: 1fr 0.5fr 0.5fr 50px;
+    column-gap: 10px;
+}
+
+#imgInOverDiv {
+    max-width: 650px;
+    max-height: 700px;
+}
+
+#imageContainerInOverDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#textContainerInOverDiv {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial;
+    font-size: 1.5rem;
+}
+
+#xIconInOverDiv {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 100vh;
+    flex-direction: row-reverse;
+}
+
+#countLikesContainerInOverDiv {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial;
+    font-size: 1.5rem;
+}
+
+#errorsAlertInOverDiv {
+    z-index: 10;
+    position: fixed;
+    overflow: hidden;
+    width: 100vw;
+    display: flex;
+    justify-content: space-around;
+}

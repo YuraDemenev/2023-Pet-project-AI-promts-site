@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  site:
+    build: ./
+    command: ./site
+    ports: -8080:8080
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=260203
+  db:
+    container_name: db_site
+    restart: no
+    image: postgres:latest
+    volumes: -./database/
+    environment:
+      - POSTGRES_PASSWORD=260203
+    ports:
+      - "5432:5432"

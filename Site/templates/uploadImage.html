@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- HTMX  -->
+    <script src="https://unpkg.com/htmx.org@1.9.5"
+        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="../static/uploadImage.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    <!-- URL FOR PROFILE -->
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="http://localhost:8080/pictures/profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-person" viewBox="0 0 16 16">
+                                <path
+                                    d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z">
+                                </path>
+                            </svg>
+                            {{ .Username}}
+                        </a>
+                    </li>
+
+                    <!-- URL FOR HOME -->
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="http://localhost:8080/pictures/">Home</a>
+                    </li>
+
+                    <!-- URL FOR LOGIN -->
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page"
+                            href="http://localhost:8080/auth/sign-in">Login</a>
+                    </li>
+            </div>
+        </div>
+    </nav>
+
+    <div id="parent">
+        <form id="form" hx-encoding='multipart/form-data' hx-post="/pictures/uploadImage" hx-target="#errorsAlert"
+            hx-indicator="#spinner">
+            <input type="file" name="image" hx-target="#image-src" hx-swap="innerHTML" class="form-control-file">
+
+            <label for="inputPromts">
+                Your promts
+            </label>
+
+            <!-- INPUT FIELD -->
+            <input type="text" class="form-control" id="inputPromts" name="inputPromts"
+                placeholder="Enter promts for your image">
+
+            <!-- BUTTON SUBMIT -->
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status"
+                    aria-hidden="true"></span>
+                Submit
+            </button>
+
+            <!-- FOR ERRORS -->
+            <div id="errorsAlert">
+
+            </div>
+
+        </form>
+        <div id="image-src"></div>
+    </div>
+
+</body>
