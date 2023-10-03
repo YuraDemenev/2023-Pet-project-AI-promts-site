@@ -1,5 +1,6 @@
 # 2023-Pet-project-AI-promts-site
 on my site you can upload images, click on images and view the promts you used to create them, or like the images you like. If you have registered you can view your profile where you can see all the images you have uploaded and liked in 2 different columns and additional information. You can use search for find image with special promt.
+
 On the site you can upload or view images as an unregistered user, but you can't like them or access your profile.
 Interesting implementation points:
 - Password hashing
