@@ -10,3 +10,6 @@ Interesting implementation points:
 - GIN framework 
 - database postgres 
 - Bootstrap for CSS 
+
+Open site:
+If you want to open a site on your computer you need PostgreSQL to create a database there is init.up.sql in schema/ it will create the same database.!!! NOTE FOR THE SITE TO WORK YOU NEED ANONYM USER WITH ID=1 !!!. you can change the id of anonym in pkg\handler\middleware.go it is const you can change it.
