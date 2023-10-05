@@ -4,6 +4,7 @@ on my site you can upload images, click on images and view the promts you used t
 On the site you can upload or view images as an unregistered user, but you can't like them or access your profile.
 Interesting implementation points:
 - Password hashing
+- infinite scroll down
 - use of Middleware
 - use of HTMX to change elements on the site without reloading the page
 - Image optimization (low quality images are loaded on the homepage for optimization, when the user clicks on the image the original image is loaded.
