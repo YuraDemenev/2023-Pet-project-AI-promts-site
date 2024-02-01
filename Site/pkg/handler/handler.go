@@ -2,17 +2,19 @@ package handler
 
 import (
 	"net/http"
+	"site/pkg/cache"
 	"site/pkg/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	service *service.Service
+	service   *service.Service
+	postCache cache.CacheImages
 }
 
-func NewHandler(service *service.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *service.Service, postCache cache.CacheImages) *Handler {
+	return &Handler{service: service, postCache: postCache}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
@@ -54,6 +56,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		pictures.GET("/profile", h.profileGet)
 		pictures.POST("/profile", h.profilePost)
 
+		//For admin. For approve or not image
+		pictures.POST("/profile/consider", h.profileConsider)
 	}
 
 	return router

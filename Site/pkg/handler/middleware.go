@@ -2,23 +2,25 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 const (
 	authorizationHeader = "Authorization"
 	userCtx             = "userId"
 	anonymId            = 1
+	adminId             = 2
 )
 
 func (h *Handler) userIdentity(c *gin.Context) {
-	header, err := c.Cookie("token")
-	if err != nil {
-		logrus.Fatalf("Middlware cookie problem :%s", err.Error())
-		return
-	}
+	header, _ := c.Cookie("token")
+	// if err != nil {
+	// 	logrus.Fatalf("Middlware cookie problem :%s", err.Error())
+	// 	return
+	// }
+
 	if header == "" {
 		//You are anonym
 		c.Set(userCtx, anonymId)
@@ -29,7 +31,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	userId, err := h.service.Authorization.ParseToken(header)
 	if err != nil {
 		//You are anonym
-		logrus.Infof("Middlware cookie problem :%s", err.Error())
+		fmt.Printf("Cant parse token, user is anonym :%s", err.Error())
 		c.Set(userCtx, anonymId)
 		return
 	}

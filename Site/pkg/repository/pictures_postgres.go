@@ -1,18 +1,30 @@
 package repository
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
+	"site/pkg/cache"
 	"strings"
+	"sync"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 type PicturesPostgres struct {
 	db *sqlx.DB
 }
 
+// var (
+// 	postCache cache.CacheImages
+// )
+
 const (
-	countOfGetImages = 10
+	countOfGetImages = 22
 	likeEmty         = `
 	<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-hand-thumbs-up" viewBox="0 0 16 16">
 		<path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"></path>
@@ -28,13 +40,15 @@ func NewPicturesPostgres(db *sqlx.DB) *PicturesPostgres {
 }
 
 // Help function that create a div for other functions. Get urls and return div data
-func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
+func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
 
 	urlsHtml = make([]string, len(urls))
+	//<img id="picture" src='../static/images/lowQuality/%s'
 
 	//For last we need to add hx-trigger='revealed' for load new image when user scroll down
 	for i, str := range urls {
 		locStr := ""
+		//if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows
 		if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows {
 			page := (lastImageId + countOfImages) / countOfImages
 			locStr = fmt.Sprintf(`
@@ -63,6 +77,44 @@ func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost s
 	return urlsHtml, nil
 }
 
+// Help function that create a div for other functions. Get urls and return div data
+func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
+
+	urlsHtml = make([]string, len(urls))
+	//<img id="picture" src='../static/images/lowQuality/%s'
+
+	//For last we need to add hx-trigger='revealed' for load new image when user scroll down
+	for i, str := range urls {
+		locStr := ""
+		//if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows
+		if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows {
+			page := (lastImageId + countOfImages) / countOfImages
+			locStr = fmt.Sprintf(`
+			<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+				<a hx-post="/pictures/info=%s" hx-headers='{"url": "%s"}'  hx-target='#overlay'>
+					<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy' hx-post='http://localhost:8080/%s?page=%d' 
+					hx-trigger='revealed' hx-swap='beforebegin' hx-headers='{"promt": "%s", "lastImageId": "%d"}' hx-target='#%s'/>
+				</a>
+			</div>`, str, str, str, urlForPost, page, promt, lastImageId+countOfImages, target)
+
+		} else if str == "" {
+			break
+
+		} else {
+			locStr = fmt.Sprintf(`
+		<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
+				<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy'>
+			</a>
+		</div>`, str, str, str)
+		}
+		urlsHtml[i] = locStr
+
+	}
+
+	return urlsHtml, nil
+}
+
 // Get userName
 func (r *PicturesPostgres) GetUserName(id int) (string, error) {
 	var username string
@@ -76,7 +128,7 @@ func (r *PicturesPostgres) GetUserName(id int) (string, error) {
 }
 
 // Func that we use when user scroll down at home page
-func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, err error) {
+func (r *PicturesPostgres) GetNewImages(lastImageId int, postCache cache.CacheImages) (urlsHtml []string, imageNums []string, err error) {
 	urls := make([]string, countOfGetImages)
 
 	//Get count of rows for stop add hx-trigger='revealed' => stop load images
@@ -84,7 +136,7 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, err
 	query_ := fmt.Sprintf("SELECT count(image_url) from %s", imagesTable)
 	row := r.db.QueryRow(query_)
 	if err := row.Scan(&countRows); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	//If it is start of load /pictures
@@ -98,14 +150,14 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, err
 	//SQL query
 	rows, err := r.db.Query(query_)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	i := 0
 	for rows.Next() {
 		//Get all urls
 		var url string
 		if err := rows.Scan(&url); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		urls[i] = url
 		i++
@@ -113,23 +165,99 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, err
 
 	urlsHtml, err = getDivForImages(urls, lastImageId, countRows, "pictures/", "", countOfGetImages, "grid")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return urlsHtml, nil
+	//check does we have this image in redis
+	//if no we save urls in urlsRedis for add in Redis
+	urlsRedis := make([]string, len(urlsHtml))
+	lastId := 0
+
+	//../static/images/20pxImage/202310011511588352.jpg
+	for _, v := range urls {
+		if v == "" {
+			break
+		}
+		check := postCache.CheckExist(v)
+		if !check {
+			urlsRedis[lastId] = v
+			lastId++
+		}
+	}
+
+	var wg sync.WaitGroup
+	for _, v := range urlsRedis {
+		if v != "" {
+			wg.Add(1)
+
+			go func(url string) {
+				defer wg.Done()
+				//open image
+				file, err := os.ReadFile("../static/images/lowQuality/" + url)
+				if err != nil {
+					logrus.Errorf("Cant open file: %s", url)
+					return
+				}
+
+				//Decode image into a go image object
+				img, _, err := image.Decode(bytes.NewBuffer(file))
+				if err != nil {
+					logrus.Errorf("Cant decode file: %s", url)
+					return
+				}
+
+				//encode img to slice of bytes
+				var buf bytes.Buffer
+				err = jpeg.Encode(&buf, img, nil)
+				if err != nil {
+					logrus.Errorf("Cant convert to bytes slice file: %s", url)
+					return
+				}
+				imageBytes := buf.Bytes()
+
+				stringBytes := base64.StdEncoding.EncodeToString(imageBytes)
+
+				postCache.SetImageBytes(url, stringBytes)
+
+				// sliceBytes, err := os.ReadFile("../static/images/lowQuality/" + url)
+				// if err != nil {
+				// 	logrus.Errorf("Cant open file: %s", url)
+				// 	return
+				// }
+
+				// stringBytes := base64.StdEncoding.EncodeToString(sliceBytes)
+				// postCache.SetImageBytes(url, stringBytes)
+
+			}(v)
+		}
+	}
+	wg.Wait()
+
+	return urlsHtml, urls, nil
 }
 
 // Function for show user promts when user click on image
 func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, error) {
-	var countLikes int
 
+	var countLikes int
+	var promt string
+	// query_ := fmt.Sprintf(`
+	// SELECT promts.title, images.like_count
+	// FROM %s,%s
+	// WHERE promts.image_url LIKE '%s'
+	// AND promts.image_url = images.image_url`, promtsTable, imagesTable, imageUrl)
 	query_ := fmt.Sprintf(`
-	SELECT promts.title, images.like_count
-	FROM %s,%s
-	WHERE promts.image_url LIKE '%s'
-	AND promts.image_url = images.image_url`, promtsTable, imagesTable, imageUrl)
-	promts := ""
+	SELECT title, like_count 
+	FROM %s 
+	WHERE image_url = '%s'`, imagesTable, imageUrl)
+
 	likeSVG := ""
+
+	//SQL query
+	row := r.db.QueryRow(query_)
+	if err := row.Scan(&promt, &countLikes); err != nil {
+		return "", err
+	}
 
 	//Get info if user click like on image
 	check, err := r.checkIfLike(imageUrl, userId)
@@ -139,26 +267,26 @@ func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, 
 
 	//if check == false it means that user never like it or like and after delete like
 	// and we use empty icon else we use fill icon
-	if check == false {
+	if !check {
 		likeSVG = likeEmty
 	} else {
 		likeSVG = likeFill
 	}
 
 	//SQL query
-	rows, err := r.db.Query(query_)
-	if err != nil {
-		return "", err
-	}
+	// rows, err := r.db.Query(query_)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	for rows.Next() {
-		//Get all promts
-		var promt string
-		if err := rows.Scan(&promt, &countLikes); err != nil {
-			return "", err
-		}
-		promts += promt + " "
-	}
+	// for rows.Next() {
+	// 	//Get all promts
+	// 	var promt string
+	// 	if err := rows.Scan(&promt, &countLikes); err != nil {
+	// 		return "", err
+	// 	}
+	// 	promts += promt + " "
+	// }
 
 	htmlStr := fmt.Sprintf(`
 	<div id="overDiv">
@@ -189,7 +317,7 @@ func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, 
 			</div>
 			<div id="errorsAlertInOverDiv"></div>
 		</div>
-	</div>`, imageUrl, promts, countLikes, imageUrl, countLikes, likeSVG)
+	</div>`, imageUrl, promt, countLikes, imageUrl, countLikes, likeSVG)
 
 	return htmlStr, nil
 }
@@ -228,7 +356,10 @@ func (r *PicturesPostgres) SearchImages(promt string, lastImageId int) (urlsHtml
 		}
 	}
 
-	result, err := getDivForImages(urlsSlice, lastImageId, countRows, "pictures/search", promt, countOfGetImages, "grid")
+	result, err := getStandartDivForImages(urlsSlice, lastImageId, countRows, "pictures/search", promt, countOfGetImages, "grid")
+	if err != nil {
+		return nil, err
+	}
 
 	return result, nil
 
@@ -274,7 +405,7 @@ func (r *PicturesPostgres) AddLike(imageUrl string, userId int, countLike int) (
 	//for save like on image
 	//Else we need to delete rows in db because no diffrent if user like it and after
 	//delete like or never like it
-	if check == false {
+	if !check {
 
 		//Add info in likes table
 		query_ := fmt.Sprintf("INSERT INTO %s VALUES ($1, $2, $3)", likesTable)

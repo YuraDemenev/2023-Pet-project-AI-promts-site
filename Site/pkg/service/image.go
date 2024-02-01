@@ -21,8 +21,13 @@ func (s *ImageService) SaveImageLink(id int, imageLink string) error {
 	return error_
 }
 
-func (s *ImageService) SavePromts(promts []string, imageLink string) error {
-	error_ := s.repo.SavePromts(promts, imageLink)
+func (s *ImageService) SavePromtsToPromts(promts []string, imageLink string) error {
+	error_ := s.repo.SavePromtsToPromts(promts, imageLink)
+	return error_
+}
+
+func (s *ImageService) SavePromtsToConsideration(promts string, imageUrl string, userId int) error {
+	error_ := s.repo.SavePromtsToConsideration(promts, imageUrl, userId)
 	return error_
 }
 

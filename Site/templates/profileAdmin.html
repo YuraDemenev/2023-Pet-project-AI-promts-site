@@ -15,7 +15,7 @@
         integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
         crossorigin="anonymous"></script>
 
-    <link rel="stylesheet" href="../static/pictures.css">
+    <link rel="stylesheet" href="../static/profileAdmin.css">
 
 </head>
 
@@ -52,12 +52,6 @@
                             href="http://localhost:8080/auth/sign-in">Login</a>
                     </li>
 
-                    <!-- URL FOR REGISTRATION -->
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page"
-                            href="http://localhost:8080/auth/sign-up">Registration</a>
-                    </li>
-
                     <!-- URL FOR UPLOAD IMAGE -->
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page"
@@ -67,38 +61,47 @@
                     </li>
                 </ul>
 
-                <!-- SEARCH FORM -->
-                <form class="d-flex" id="formAuthorization" action="/pictures/search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="promt"
-                        name="promt" onCopy="return false" onDrag="return false" onDrop="return false"
-                        onPaste="return false" autocomplete=off>
-                    <button class="btn btn-outline-secondary" type="submit">Search</button>
-                </form>
             </div>
         </div>
     </nav>
+    <div id="mainGrid">
+        <div id="profileInfo">
+            <p>Hello {{ .Username}}</p>
 
-    <div style="margin: 0">
-        <!-- For first images -->
-        <div class="grid">
-            {{ range .Urls}}
-            {{.}}
-            {{ end}}
-            <div id="grid">
-
+            <p>the number of images to be checked: {{ .CountImages}}</p>
+        </div>
+        <div>
+            <p id="title">Images for approve:</p>
+            <div id="container">
+                <div id="imagesForApprove">
+                    {{ range .UrlsForApprove}}
+                    {{.}}
+                    {{ end}}
+                    <div id="targetApprove"></div>
+                </div>
             </div>
         </div>
-        <div id="overlay"></div>
 
     </div>
-
+    <div id="overlay"></div>
 
 </body>
 
-<!-- Script to remove HTML element -->
 <script>
     function deleteOverDiv() {
+        const gridContainer = document.getElementById('imagesForApprove'); // Assuming a class name of "grid-container"
+        const firstItem = gridContainer.querySelector(':first-child');
+        gridContainer.removeChild(firstItem);
+
         let div = document.getElementById('overDiv');
         div.parentNode.removeChild(div);
     }
 </script>
+
+<!-- <script>
+    function deleteInGridItem() {
+        const gridContainer = document.getElementById('gridInOverDiv'); // Assuming a class name of "grid-container"
+        const firstItem = gridContainer.querySelector(':first-child');
+        gridContainer.removeChild(firstItem);
+    }
+</script> -->

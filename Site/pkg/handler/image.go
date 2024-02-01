@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nfnt/resize"
@@ -23,8 +24,8 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 		return
 	}
 	//Split string promt to slice
-	promtsSlice := h.service.Image.GetPromts(promts)
-	if len(promtsSlice) == 0 {
+	//promtsSlice := h.service.Image.GetPromts(promts)
+	if len(promts) == 0 {
 		generateErrorAller(http.StatusBadRequest, "No promts", "Please write promts for your image", nil, *&c)
 		return
 	}
@@ -38,12 +39,38 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 	//Recreate name
 	file.Filename = h.service.Image.GenerateNewImageName()
 
-	//Save file
-	err = c.SaveUploadedFile(file, "../static/images/highQuality/"+file.Filename)
-	if err != nil {
-		generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+	//Get user id
+	userId, ok := getUserId(c)
+	if ok != nil {
+		generateErrorAller(http.StatusBadGateway, "Server fail", ok.Error(), err, *&c)
 		return
 	}
+
+	//Save link to database
+	// err = h.service.Image.SaveImageLink(userId, file.Filename)
+	// if err != nil {
+	// 	generateErrorAller(http.StatusInternalServerError, "Server fail", "Please try again", err, *&c)
+	// 	return
+	// }
+
+	err = h.service.Image.SavePromtsToConsideration(promts, file.Filename, userId)
+	if err != nil {
+		generateErrorAller(http.StatusInternalServerError, "Server fail", "Please try again", err, *&c)
+		return
+	}
+
+	//Save file
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = c.SaveUploadedFile(file, "../static/images/highQuality/"+file.Filename)
+		if err != nil {
+			generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+			return
+		}
+	}()
 
 	//Save low quality
 	fileContainer, err := file.Open()
@@ -51,6 +78,7 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 		generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
 		return
 	}
+
 	byteContainer, err := io.ReadAll(fileContainer)
 	if err != nil {
 		generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
@@ -62,41 +90,55 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 		generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
 		return
 	}
-	out, err := os.Create("../static/images/lowQuality/" + file.Filename)
 
-	fileLowQuality := resize.Resize(350, 0, image, resize.Lanczos2)
-	opt := jpeg.Options{
-		Quality: 90,
-	}
-	err = jpeg.Encode(out, fileLowQuality, &opt)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		out, err := os.Create("../static/images/lowQuality/" + file.Filename)
+
+		if err != nil {
+			generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+			return
+		}
+
+		fileLowQuality := resize.Resize(350, 0, image, resize.Lanczos2)
+		opt := jpeg.Options{
+			Quality: 90,
+		}
+
+		err = jpeg.Encode(out, fileLowQuality, &opt)
+		if err != nil {
+			generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+			return
+		}
+	}()
 
 	//Save 20px (For lazy loading in html)
-	out, err = os.Create("../static/images/20pxImage/" + file.Filename)
-	fileLowQuality = resize.Resize(20, 0, image, resize.Lanczos2)
-	opt = jpeg.Options{
-		Quality: 0,
-	}
-	err = jpeg.Encode(out, fileLowQuality, &opt)
 
-	//Get user id
-	userId, ok := getUserId(c)
-	if ok != nil {
-		generateErrorAller(http.StatusBadGateway, "Server fail", ok.Error(), err, *&c)
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	//Save link to database
-	err = h.service.Image.SaveImageLink(userId, file.Filename)
-	if err != nil {
-		generateErrorAller(http.StatusInternalServerError, "Server fail", "Please try again", err, *&c)
-		return
-	}
+		out, err := os.Create("../static/images/20pxImage/" + file.Filename)
+		if err != nil {
+			generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+			return
+		}
 
-	err = h.service.Image.SavePromts(promtsSlice, file.Filename)
-	if err != nil {
-		generateErrorAller(http.StatusInternalServerError, "Server fail", "Please try again", err, *&c)
-		return
-	}
+		fileLowQuality := resize.Resize(20, 0, image, resize.Lanczos2)
+		opt := jpeg.Options{
+			Quality: 0,
+		}
+
+		err = jpeg.Encode(out, fileLowQuality, &opt)
+		if err != nil {
+			generateErrorAller(http.StatusInternalServerError, "Upload image failed", "Please try again", err, *&c)
+			return
+		}
+	}()
+
+	wg.Wait()
 
 	//Success message
 	htmlStr := "<div class='alert alert-success' role='alert'>Succes upload image</div>"

@@ -1,14 +1,22 @@
 package main
 
 import (
+	"site/pkg/cache"
 	site "site/pkg/elements"
 	"site/pkg/handler"
 	"site/pkg/repository"
 	"site/pkg/service"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
+
+const IpAdress = "localhost:8080"
+
+// var (
+// 	postCache cache.CacheImages = cache.NewRedisCache(IpAdress, 0, time.Hour)
+// )
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
@@ -34,9 +42,11 @@ func main() {
 		logrus.Fatalf("failed to initialize db: %s", err.Error())
 	}
 
+	postCache := cache.NewRedisCache("localhost:6379", 0, time.Hour)
+
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
+	handlers := handler.NewHandler(services, postCache)
 	server := new(site.Server)
 
 	err = server.Run(viper.GetString("port"), handlers.InitRoutes())

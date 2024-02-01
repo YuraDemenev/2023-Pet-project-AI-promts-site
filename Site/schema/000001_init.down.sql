@@ -1,10 +1,5 @@
-DROP TABLE lists_items;
-
-DROP TABLE users_lists;
-
-DROP TABLE todo_lists;
-
+DROP TABLE consideration;
+DROP TABLE likes;
+DROP TABLE promts;
+DROP TABLE images;
 DROP TABLE users;
-
-DROP TABLE todo_items;
-

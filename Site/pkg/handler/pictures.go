@@ -4,28 +4,65 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type lastImageIdData struct {
 	Id string `json:"lastImageId"`
 }
 
-// func (h *Handler) getUserNameLocal(c *gin.Context) string {
-// 	idData, _ := c.Get(userCtx)
-// 	id, check := idData.(int)
-// 	if check == false {
-// 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
-// 		return ""
-// 	}
-// 	userName, err := h.service.Pictures.GetUserName(id)
-// 	if err != nil {
-// 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
-// 		return ""
-// 	}
-// 	return userName
-// }
+// For check exist image in redis or no
+func (h *Handler) GetBytes(imageNums []string, imageBytes *[]string) {
+	//checking does imageNums exist in redis
+	var wg sync.WaitGroup
+	for i, num := range imageNums {
+		if num == "" {
+			continue
+		}
+		wg.Add(1)
+		go func(i int, num string) {
+
+			defer wg.Done()
+			// localCheck := h.postCache.CheckExist(num)
+			// //if not exist add bytes slice to redis
+			// if !localCheck {
+			// 	//open image
+			// 	file, err := os.Open("../static/images/lowQuality/" + num)
+			// 	if err != nil {
+			// 		logrus.Errorf("Cant open file: %s", num)
+			// 		return
+			// 	}
+
+			// 	//Decode image into a go image object
+			// 	img, _, err := image.Decode(file)
+			// 	if err != nil {
+			// 		logrus.Errorf("Cant decode file: %s", num)
+			// 		return
+			// 	}
+
+			// 	//encode img to slice of bytes
+			// 	buf := new(bytes.Buffer)
+			// 	err = jpeg.Encode(buf, img, nil)
+			// 	if err != nil {
+			// 		logrus.Errorf("Cant convert to bytes slice file: %s", num)
+			// 		return
+			// 	}
+			// 	imageBytes := buf.Bytes()
+			// 	stringBytes := base64.StdEncoding.EncodeToString(imageBytes)
+
+			// 	h.postCache.SetImageBytes(num, stringBytes)
+			// }
+			(*imageBytes)[i] = h.postCache.GetImageBytes(num)
+		}(i, num)
+
+	}
+	wg.Wait()
+
+}
 
 // Function for home page when you scroll down
 func (h *Handler) watchPicturePost(c *gin.Context) {
@@ -34,10 +71,43 @@ func (h *Handler) watchPicturePost(c *gin.Context) {
 	lastImageIdInt, _ := strconv.Atoi(lastImageId)
 
 	//Get new urls
-	urls, err := h.service.Pictures.GetNewImages(lastImageIdInt)
+	urls, imageNums, err := h.service.Pictures.GetNewImages(lastImageIdInt, h.postCache)
+
+	imageBytes := make([]string, len(urls))
+	h.GetBytes(imageNums, &imageBytes)
+
 	if err != nil {
 		generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
 	}
+
+	//Add bytes in img src {{.Bytes}}
+	var wg sync.WaitGroup
+	for i := range imageBytes {
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			t, err := template.New("Bytes").Parse(urls[i])
+			if err != nil {
+				generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			}
+
+			dataBytes := map[string]string{
+				"Bytes": imageBytes[i],
+			}
+
+			builder := &strings.Builder{}
+			err = t.Execute(builder, dataBytes)
+			if err != nil {
+				generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			}
+
+			urls[i] = builder.String()
+		}(i)
+	}
+	wg.Wait()
+
 	for _, htmlStr := range urls {
 		if htmlStr == "" {
 			break
@@ -46,7 +116,6 @@ func (h *Handler) watchPicturePost(c *gin.Context) {
 		tmpl.Execute(c.Writer, nil)
 	}
 
-	return
 }
 
 // Function for home page when you just click Home
@@ -63,17 +132,52 @@ func (h *Handler) watchPictureGet(c *gin.Context) {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
 		return
 	}
-	tmpl, _ := template.ParseFiles("../templates/pictures.html")
+	tmpl, err := template.ParseFiles("../templates/pictures.html")
+
+	if err != nil {
+		logrus.Fatalf("Problem parse pictures.html :%s", err.Error())
+		return
+	}
 
 	//Get Urls
-	urls, err := h.service.Pictures.GetNewImages(0)
+
+	urls, imageNums, err := h.service.Pictures.GetNewImages(0, h.postCache)
 	if err != nil {
 		generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
 	}
+
+	imageBytes := make([]string, len(urls))
+	//Check here if image exist in redis. if no, add in redis
+	h.GetBytes(imageNums, &imageBytes)
 	urslHtml := make([]template.HTML, len(urls))
-	for i := range urls {
-		urslHtml[i] = template.HTML(urls[i])
+
+	//Sync execute bytes to img src
+	var wg sync.WaitGroup
+	for i := range imageBytes {
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			t, err := template.New("Bytes").Parse(urls[i])
+			if err != nil {
+				generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			}
+
+			dataBytes := map[string]string{
+				"Bytes": imageBytes[i],
+			}
+
+			builder := &strings.Builder{}
+			err = t.Execute(builder, dataBytes)
+			if err != nil {
+				generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			}
+
+			urslHtml[i] = template.HTML(builder.String())
+		}(i)
 	}
+	wg.Wait()
 
 	data := map[string]interface{}{
 		"Username": userName,
@@ -94,15 +198,29 @@ func (h *Handler) showPromts(c *gin.Context) {
 		return
 	}
 
-	//Get image url
-	url := c.Request.Header.Get("url")
-	htmlStr, err := h.service.Pictures.GetImagePromts(url, idInt)
-	if err != nil {
-		generateErrorAller(http.StatusBadGateway, "DataBase fail", "please try again", err, *&c)
+	//If we admin we have got another logic
+	if id == adminId {
+		//Get image url
+		url := c.Request.Header.Get("url")
+		htmlStr, err := h.service.Profile.GetApproveButtons(url)
+		if err != nil {
+			generateErrorAller(http.StatusBadGateway, "DataBase fail", "please try again", err, *&c)
+		}
+		tmpl, _ := template.New("t").Parse(htmlStr)
+		tmpl.Execute(c.Writer, nil)
+
+	} else {
+
+		//Get image url
+		url := c.Request.Header.Get("url")
+		htmlStr, err := h.service.Pictures.GetImagePromts(url, idInt)
+		if err != nil {
+			generateErrorAller(http.StatusBadGateway, "DataBase fail", "please try again", err, *&c)
+		}
+		tmpl, _ := template.New("t").Parse(htmlStr)
+		tmpl.Execute(c.Writer, nil)
 	}
-	tmpl, _ := template.New("t").Parse(htmlStr)
-	tmpl.Execute(c.Writer, nil)
-	return
+
 }
 
 // Function for search when you just use search

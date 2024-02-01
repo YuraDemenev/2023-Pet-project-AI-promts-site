@@ -1,6 +1,6 @@
 #mainGrid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     column-gap: 5%;
 }
 
@@ -28,25 +28,34 @@
 }
 
 #container {
-    /* height: 560px; */
+    height: 560px;
     overflow: auto;
     overscroll-behavior-y: contain;
 }
 
-#imagesThatLike {
+#imagesForApprove {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     column-gap: 2px;
     row-gap: 2px;
 }
 
-#imagesThatUpload {
-    min-height: 560px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    column-gap: 2px;
-    row-gap: 2px;
+#buttonsInOverDiv {
+    grid-row: 2;
+    column-gap: 10px;
+    /* Place the button container in the second row */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+#considerButtonOverDiv {
+    width: 25%;
+    height: 25%;
+    font-size: 1.5rem;
+}
+
+
 
 /* All next styles for divs when user click on image */
 #overDiv {
@@ -60,11 +69,14 @@
     /* display: flex; */
     position: fixed;
     overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
 }
 
 #gridInOverDiv {
     display: grid;
-    grid-template-columns: 1fr 0.5fr 0.5fr 50px;
+    grid-template-columns: 1fr 0.5fr 50px;
+    grid-row: 1;
     column-gap: 10px;
 }
 
@@ -77,14 +89,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    /* height: 100vh; */
 }
 
 #textContainerInOverDiv {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    height: 100vh;
+    /* height: 100vh; */
     font-family: Arial;
     font-size: 1.5rem;
 }
@@ -93,18 +105,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    height: 100vh;
+    /* height: 100vh; */
     flex-direction: row-reverse;
 }
 
-#countLikesContainerInOverDiv {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    height: 100vh;
-    font-family: Arial;
-    font-size: 1.5rem;
-}
+
 
 #errorsAlertInOverDiv {
     z-index: 10;

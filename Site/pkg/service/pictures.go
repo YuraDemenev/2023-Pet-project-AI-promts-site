@@ -1,6 +1,7 @@
 package service
 
 import (
+	"site/pkg/cache"
 	"site/pkg/repository"
 	"strings"
 )
@@ -16,8 +17,8 @@ func (s *PicturesService) GetUserName(id int) (string, error) {
 	return s.repo.GetUserName(id)
 }
 
-func (s *PicturesService) GetNewImages(lastImageId int) (urlsHtml []string, err error) {
-	return s.repo.GetNewImages(lastImageId)
+func (s *PicturesService) GetNewImages(lastImageId int, postCache cache.CacheImages) (urlsHtml []string, imageNums []string, err error) {
+	return s.repo.GetNewImages(lastImageId, postCache)
 }
 
 func (s *PicturesService) GetImagePromts(imageUrl string, userId int) (string, error) {
