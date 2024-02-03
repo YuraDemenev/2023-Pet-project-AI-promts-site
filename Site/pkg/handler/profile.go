@@ -21,7 +21,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 
 	//If you a anonym redirect to home
 	if id == anonymId {
-		c.Redirect(http.StatusMovedPermanently, "http://localhost:8080/pictures/")
+		c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
 	}
 
 	// if we admin we get another profile
@@ -120,7 +120,7 @@ func (h *Handler) profilePost(c *gin.Context) {
 
 	//If you a anonym redirect to home
 	if id == anonymId {
-		c.Redirect(http.StatusMovedPermanently, "http://localhost:8080/pictures/")
+		c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
 	}
 
 	if id == adminId {

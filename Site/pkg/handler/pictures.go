@@ -241,7 +241,7 @@ func (h *Handler) searchGet(c *gin.Context) {
 	//If promt null return to main page
 	promt := c.Request.FormValue("promt")
 	if promt == "" {
-		c.Redirect(http.StatusMovedPermanently, "http://localhost:8080/pictures/")
+		c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
 	}
 
 	//Get urls

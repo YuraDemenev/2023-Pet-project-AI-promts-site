@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const IpAdress = "localhost:8080"
+const IpAdress = "imagepromts.ru"
 
 // var (
 // 	postCache cache.CacheImages = cache.NewRedisCache(IpAdress, 0, time.Hour)

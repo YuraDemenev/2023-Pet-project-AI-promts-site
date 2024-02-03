@@ -24,6 +24,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	fs := http.FileSystem(http.Dir("../static"))
 	router.StaticFS("static/", fs)
 
+	base := router.Group("/")
+	{
+		base.GET("/", h.base)
+	}
+
 	auth := router.Group("/auth")
 	{
 		auth.GET("/sign-up", h.registration)
@@ -61,4 +66,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	}
 
 	return router
+}
+
+// GET FUNCIONS
+func (handler *Handler) base(c *gin.Context) {
+	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru:8080/pictures/")
 }
