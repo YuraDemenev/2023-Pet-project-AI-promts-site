@@ -8,12 +8,14 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // Function that start when user go to /profile
 func (h *Handler) profileGet(c *gin.Context) {
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
+	logrus.Error(id)
 	if !check {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
 		return
@@ -26,6 +28,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 
 	// if we admin we get another profile
 	if id == adminId {
+		logrus.Error("Admin")
 		userName, err := h.service.Pictures.GetUserName(id)
 		if err != nil {
 			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
