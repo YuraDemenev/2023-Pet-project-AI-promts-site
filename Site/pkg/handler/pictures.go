@@ -123,13 +123,11 @@ func (h *Handler) watchPictureGet(c *gin.Context) {
 	//Get user user name
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
-	logrus.Info(id)
 	if !check {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
 		return
 	}
 	userName, err := h.service.Pictures.GetUserName(id)
-	logrus.Info(userName)
 	if err != nil {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
 		return
