@@ -28,4 +28,4 @@ CREATE TABLE consideration(
     user_id BIGINT REFERENCES users(id) on DELETE CASCADE,
     image_url TEXT,
     title TEXT
-)
+);

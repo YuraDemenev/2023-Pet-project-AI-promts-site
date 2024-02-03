@@ -48,7 +48,7 @@ func (h *Handler) signUp(c *gin.Context) {
 
 	id, err := h.service.Authorization.CreateUser(locUser)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		generateErrorAller(http.StatusBadRequest, "Registration Failed", err.Error(), nil, *&c)
 		return
 	}
 	c.Set(userCtx, id)
