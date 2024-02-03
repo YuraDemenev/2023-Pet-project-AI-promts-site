@@ -84,11 +84,10 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 	//Save jwt token
-	c.SetCookie("token", token, int(time.Second*3600*2), "/", "localhost", false, true)
+	c.SetCookie("token", token, int(time.Second*3600*2), "/", "94.228.121.176", false, true)
 	//c.Set("Authorization", token)
 	c.Header("HX-Redirect", "/pictures/")
 
-	return
 }
 
 // GET FUNCIONS
