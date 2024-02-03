@@ -6,7 +6,6 @@ import (
 	"site/pkg/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -25,10 +24,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	fs := http.FileSystem(http.Dir("../static"))
 	router.StaticFS("static/", fs)
 
-	base := router.Group("/")
-	{
-		base.GET("/", h.root)
-	}
+	// base := router.Group("/")
+	// {
+	// 	base.GET("/", h.root)
+	// }
 
 	auth := router.Group("/auth")
 	{
@@ -70,7 +69,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 }
 
 // GET FUNCIONS
-func (handler *Handler) root(c *gin.Context) {
-	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
-	logrus.Info("redirect")
-}
+// func (handler *Handler) root(c *gin.Context) {
+// 	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
+// 	logrus.Error("redirect")
+// }
