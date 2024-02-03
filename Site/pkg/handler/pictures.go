@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -228,11 +229,13 @@ func (h *Handler) searchGet(c *gin.Context) {
 	//Get UserName
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
+	fmt.Println(id)
 	if check == false {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
 		return
 	}
 	userName, err := h.service.Pictures.GetUserName(id)
+	fmt.Println(userName)
 	if err != nil {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
 		return
