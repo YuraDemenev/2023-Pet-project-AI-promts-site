@@ -70,5 +70,5 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 // GET FUNCIONS
 func (handler *Handler) base(c *gin.Context) {
-	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru:8080/pictures/")
+	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
 }
