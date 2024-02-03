@@ -2,7 +2,6 @@ package handler
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -229,13 +228,13 @@ func (h *Handler) searchGet(c *gin.Context) {
 	//Get UserName
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
-	log.Println(id)
-	if check == false {
+	logrus.Println(id)
+	if !check {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
 		return
 	}
 	userName, err := h.service.Pictures.GetUserName(id)
-	log.Println(userName)
+	logrus.Println(userName)
 	if err != nil {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
 		return
