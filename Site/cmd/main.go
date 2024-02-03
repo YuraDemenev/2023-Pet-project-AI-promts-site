@@ -42,7 +42,7 @@ func main() {
 		logrus.Fatalf("failed to initialize db: %s", err.Error())
 	}
 
-	postCache := cache.NewRedisCache("94.228.121.176:6379", 0, time.Hour)
+	postCache := cache.NewRedisCache("localhost:6379", 0, time.Hour)
 
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)

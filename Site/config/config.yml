@@ -2,7 +2,7 @@ port: "8080"
 
 db:
   username: "postgres"
-  host: "94.228.121.176"
+  host: "localhost"
   port: "5432"
   dbname: "SiteWatchImage"
   sslmode: "disable"
