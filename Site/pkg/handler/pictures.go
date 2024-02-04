@@ -241,7 +241,7 @@ func (h *Handler) searchGet(c *gin.Context) {
 	//If promt null return to main page
 	promt := c.Request.FormValue("promt")
 	if promt == "" {
-		c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
+		c.Redirect(http.StatusMovedPermanently, "https://imagepromts.ru/pictures/")
 	}
 
 	//Get urls
@@ -322,9 +322,6 @@ func (h *Handler) addLikePost(c *gin.Context) {
 			return
 		}
 
-		// c.Writer.WriteHeader(302)
-		// c.Header("test", "test")
-		// c.HTML(http.StatusOK,"",gin.H{"stringSVG": htmlStr})
 		tmpl, _ := template.New("t").Parse(htmlStr)
 		tmpl.Execute(c.Writer, nil)
 

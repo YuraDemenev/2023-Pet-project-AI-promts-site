@@ -54,7 +54,7 @@ func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlF
 			locStr = fmt.Sprintf(`
 			<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
 				<a hx-post="/pictures/info=%s" hx-headers='{"url": "%s"}'  hx-target='#overlay'>
-					<img id="picture" src='../static/images/lowQuality/%s' loading='lazy' hx-post='http://imagepromts.ru/%s?page=%d' 
+					<img id="picture" src='../static/images/lowQuality/%s' loading='lazy' hx-post='https://imagepromts.ru/%s?page=%d' 
 					hx-trigger='revealed' hx-swap='beforebegin' hx-headers='{"promt": "%s", "lastImageId": "%d"}' hx-target='#%s'/>
 				</a>
 			</div>`, str, str, str, str, urlForPost, page, promt, lastImageId+countOfImages, target)
@@ -92,7 +92,7 @@ func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost s
 			locStr = fmt.Sprintf(`
 			<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
 				<a hx-post="/pictures/info=%s" hx-headers='{"url": "%s"}'  hx-target='#overlay'>
-					<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy' hx-post='http://imagepromts.ru/%s?page=%d' 
+					<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy' hx-post='https://imagepromts.ru/%s?page=%d' 
 					hx-trigger='revealed' hx-swap='beforebegin' hx-headers='{"promt": "%s", "lastImageId": "%d"}' hx-target='#%s'/>
 				</a>
 			</div>`, str, str, str, urlForPost, page, promt, lastImageId+countOfImages, target)

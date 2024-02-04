@@ -70,6 +70,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 // GET FUNCIONS
 // func (handler *Handler) root(c *gin.Context) {
-// 	c.Redirect(http.StatusMovedPermanently, "http://imagepromts.ru/pictures/")
+// 	c.Redirect(http.StatusMovedPermanently, "https://imagepromts.ru/pictures/")
 // 	logrus.Error("redirect")
 // }
