@@ -141,7 +141,7 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 	wg.Wait()
 
 	//Success message
-	htmlStr := "<div class='alert alert-success' role='alert'>Succes upload image</div>"
+	htmlStr := "<div class='alert alert-success' role='alert'>Succes upload image. Your image is under consideration</div>"
 	tmpl, _ := template.New("t").Parse(htmlStr)
 	tmpl.Execute(c.Writer, nil)
 
@@ -149,14 +149,13 @@ func (h *Handler) uploadImagePost(c *gin.Context) {
 	tmpl, _ = template.New("t").Parse(htmlStr)
 	tmpl.Execute(c.Writer, nil)
 
-	return
 }
 
 func (h *Handler) uploadImageGet(c *gin.Context) {
 	//Get user user name
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
-	if check == false {
+	if !check {
 		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
 		return
 	}
@@ -172,5 +171,4 @@ func (h *Handler) uploadImageGet(c *gin.Context) {
 
 	tmpl.Execute(c.Writer, data)
 
-	return
 }

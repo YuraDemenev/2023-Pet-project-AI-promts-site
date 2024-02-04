@@ -42,6 +42,15 @@ func (h *Handler) signUp(c *gin.Context) {
 		generateErrorAller(http.StatusBadRequest, "Registration Failed", "Username is empty", nil, *&c)
 		return
 	}
+	if len(username) > 75 {
+		generateErrorAller(http.StatusBadRequest, "Registration Failed", "Username is to long", nil, *&c)
+		return
+	}
+	if len(password) > 500 {
+		generateErrorAller(http.StatusBadRequest, "Registration Failed", "Password is to long", nil, *&c)
+		return
+	}
+
 	var locUser site.User
 	locUser.Password = password
 	locUser.UserName = username
@@ -59,7 +68,7 @@ func (h *Handler) signUp(c *gin.Context) {
 	c.HTML(http.StatusOK, "", gin.H{
 		"Message": "Succes registration",
 	})
-	return
+
 }
 
 func (h *Handler) signIn(c *gin.Context) {
@@ -83,6 +92,8 @@ func (h *Handler) signIn(c *gin.Context) {
 		//newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+	c.SetCookie("", "", -1, "/", "imagepromts.ru", false, true) // Empty name deletes all cookies
+
 	//Save jwt token
 	c.SetCookie("token", token, int(time.Second*3600*2), "/", "imagepromts.ru", false, true)
 	//c.Set("Authorization", token)
