@@ -37,5 +37,5 @@ Site link: https://imagepromts.ru/
 - Redis для кэширования изображений
 - VPS сервер на linux ubuntu
 - Nginx и SSL для работы сайта
-- 
+
 Site link: https://imagepromts.ru/
