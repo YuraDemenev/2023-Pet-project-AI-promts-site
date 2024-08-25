@@ -43,18 +43,18 @@ func main() {
 	})
 
 	redis := cache.NewCache(redisCache, time.Minute*30)
-	//Инициализируем repository (сервис через который
-	//будут запускаться функции взаимодействующие с бд)
+	//Initialize repository (service through which
+	//will run functions interacting with the database)
 	repos := repository.NewRepository(db, redis)
 
-	//Инициализируем service (через него будут запускаться
-	//Промежуточные функции и будет запускаться взаимодействие с БД
-	//через repository)
+	//Initialize service (it will be used to launch the
+	//Intermediate functions and interaction with the database will be launched through it
+	//through repository)
 	services := service.NewService(repos)
 
-	//Инициализируем hadlers (пути по которым можно отправлять запросы)
+	//Initialize hadlers (paths on which requests can be sent)
 	handlers := handler.NewHandler(services, redis, url)
-	//Инициализируем сервер
+	//Initialize the server
 	server := new(site.Server)
 
 	err = server.Run(viper.GetString("port"), handlers.InitRoutes())
