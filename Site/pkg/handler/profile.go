@@ -15,27 +15,27 @@ func (h *Handler) profileGet(c *gin.Context) {
 	idData, _ := c.Get(userCtx)
 	id, check := idData.(int)
 	if !check {
-		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, *&c)
+		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", nil, c)
 		return
 	}
 
 	//If you a anonym redirect to home
 	if id == anonymId {
-		c.Redirect(http.StatusMovedPermanently, "https://imagepromts.ru/pictures/")
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s/pictures/", h.url))
 	}
 
 	// if we admin we get another profile
 	if id == adminId {
 		userName, err := h.service.Pictures.GetUserName(id)
 		if err != nil {
-			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 			return
 		}
 
 		//Get Urls
 		urlsHtml, err := h.service.Profile.GetConsiderationImages(0)
 		if err != nil {
-			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, c)
 			return
 		}
 		//Convert urls to html
@@ -46,7 +46,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 
 		countImages, err := h.service.Profile.GetAdminInfo()
 		if err != nil {
-			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, c)
 			return
 		}
 
@@ -54,6 +54,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 			"Username":       userName,
 			"CountImages":    countImages,
 			"UrlsForApprove": HTMLImages,
+			"URL":            h.url,
 		}
 
 		tmpl, _ := template.ParseFiles("../templates/profileAdmin.html")
@@ -63,14 +64,14 @@ func (h *Handler) profileGet(c *gin.Context) {
 
 		userName, err := h.service.Pictures.GetUserName(id)
 		if err != nil {
-			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 			return
 		}
 
 		//Get Urls
 		urslImagesLike, urslImagesUpload, err := h.service.Profile.GetNewImagesProfile(0, id)
 		if err != nil {
-			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, c)
 			return
 		}
 
@@ -88,7 +89,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 
 		countLikes, countUploaded, countLikesOnUploaded, err := h.service.GetUserInfo(id)
 		if err != nil {
-			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server fail", "please try again", err, c)
 			return
 		}
 
@@ -99,6 +100,7 @@ func (h *Handler) profileGet(c *gin.Context) {
 			"CountLikes":           countLikes,
 			"CountUploaded":        countUploaded,
 			"CountLikesOnUploaded": countLikesOnUploaded,
+			"URL":                  h.url,
 		}
 
 		tmpl, _ := template.ParseFiles("../templates/profile.html")
@@ -114,13 +116,13 @@ func (h *Handler) profilePost(c *gin.Context) {
 	id, checkBool := idData.(int)
 	if !checkBool {
 		err := errors.New("Can not convert id to int")
-		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 		return
 	}
 
 	//If you a anonym redirect to home
 	if id == anonymId {
-		c.Redirect(http.StatusMovedPermanently, "https://imagepromts.ru/pictures/")
+		c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s/pictures/", h.url))
 	}
 
 	if id == adminId {
@@ -128,13 +130,13 @@ func (h *Handler) profilePost(c *gin.Context) {
 		lastImageId := c.Request.Header.Get("lastImageId")
 		lastImageIdInt, err := strconv.Atoi(lastImageId)
 		if err != nil {
-			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 			return
 		}
 
 		urls, err = h.service.Profile.GetNewImagesAdmin(lastImageIdInt, id)
 		if err != nil {
-			generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, c)
 			return
 		}
 
@@ -154,7 +156,7 @@ func (h *Handler) profilePost(c *gin.Context) {
 		lastImageId := c.Request.Header.Get("lastImageId")
 		lastImageIdInt, err := strconv.Atoi(lastImageId)
 		if err != nil {
-			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+			generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 			return
 		}
 
@@ -164,13 +166,13 @@ func (h *Handler) profilePost(c *gin.Context) {
 		if check == "like" || check == "upload" {
 			urls, err = h.service.Profile.GetNewImages(lastImageIdInt, id, check)
 			if err != nil {
-				generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, *&c)
+				generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, c)
 				return
 			}
 
 		} else {
 			err := errors.New("check not like and not upload")
-			generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, *&c)
+			generateErrorAller(http.StatusInternalServerError, "Server error", "Please try again", err, c)
 			return
 		}
 
@@ -195,7 +197,7 @@ func (h *Handler) profileConsider(c *gin.Context) {
 	promt, err := h.service.Profile.ConsiderImageAdmin(url, status)
 
 	if err != nil {
-		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, *&c)
+		generateErrorAller(http.StatusBadGateway, "Server fail", "please try again", err, c)
 		return
 	}
 

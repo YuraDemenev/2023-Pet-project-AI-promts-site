@@ -20,7 +20,7 @@ type Image interface {
 
 type Pictures interface {
 	GetUserName(id int) (string, error)
-	GetNewImages(lastImageId int, postCache cache.CacheImages) (urlsHtml []string, imageNums []string, err error)
+	GetNewImages(lastImageId int) (urlsHtml []string, imageNums []string, err error)
 	GetImagePromts(imageUrl string, userId int) (string, error)
 	SearchImages(promtSlice string, lastImageId int) (urlsHtml []string, err error)
 	AddLike(image_url string, userId int, countLike int) (string, error)
@@ -45,11 +45,11 @@ type Repository struct {
 	Profile
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, cache *cache.Cache) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
 		Image:         NewImagePostgres(db),
-		Pictures:      NewPicturesPostgres(db),
+		Pictures:      NewPicturesPostgres(db, cache.CacheImages),
 		Profile:       NewProfilePostgres(db),
 	}
 }

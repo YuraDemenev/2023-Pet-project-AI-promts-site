@@ -1,27 +1,24 @@
-FROM golang:1.21.0
+FROM golang:1.21 AS build-stage
 
-RUN go version
+WORKDIR /app
 
-# WORKDIR /app
-# COPY go.mod go.sum ./
-# RUN go mod download
-
-# COPY *.go ./
-# COPY *.yml ./
-# COPY *.env ./
-# COPY *.jpg ./
-
-# RUN go build -o site ./cmd/main.go
-# EXPOSE 8080
-# CMD ["./site"]
-
-COPY ./config/ /config/
-# COPY /cmd/.env /cmd
-
-ENV GOPATH=/cmd
-COPY ./ ./
-
+COPY go.mod go.sum ./
 RUN go mod download
-RUN go build -o site ./cmd/main.go
 
-CMD ["./site"]
+COPY . .
+
+RUN go build -o /serve ./cmd/main.go
+
+
+FROM debian:bookworm
+
+WORKDIR /
+
+COPY --from=build-stage /serve /serve
+# COPY ./config /config
+COPY ./templates /templates
+COPY ./static /static
+
+EXPOSE 8080
+
+ENTRYPOINT ["/serve"]

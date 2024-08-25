@@ -1,7 +1,6 @@
 package service
 
 import (
-	"site/pkg/cache"
 	site "site/pkg/elements"
 	"site/pkg/repository"
 )
@@ -21,7 +20,7 @@ type Image interface {
 
 type Pictures interface {
 	GetUserName(id int) (string, error)
-	GetNewImages(lastImageId int, postCache cache.CacheImages) (urlsHtml []string, imageNums []string, err error)
+	GetNewImages(lastImageId int) (urlsHtml []string, imageNums []string, err error)
 	GetImagePromts(imageUrl string, userId int) (string, error)
 	SearchImages(promt string, lastImageId int) (urlsHtml []string, err error)
 	AddLike(imageUrl string, userId int, countLike int) (string, error)

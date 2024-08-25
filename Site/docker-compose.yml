@@ -1,20 +1,17 @@
-version: '3.8'
-
 services:
   site:
-    build: ./
-    command: ./site
-    ports: -8080:8080
-    depends_on:
-      - db
-    environment:
-      - DB_PASSWORD=260203
-  db:
-    container_name: db_site
-    restart: no
-    image: postgres:latest
-    volumes: -./database/
-    environment:
-      - POSTGRES_PASSWORD=260203
+    image: ai_prompts_site
     ports:
-      - "5432:5432"
+      - 8080:8080
+    volumes:
+      - ./config:/config
+      - ./images:/images
+
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD: 260203
+    volumes:
+      - ./data:/var/lib/postgresql/data
+  redis:
+    image: redis:alpine

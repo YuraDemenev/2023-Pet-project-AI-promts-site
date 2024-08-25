@@ -9,25 +9,20 @@ import (
 )
 
 type Handler struct {
-	service   *service.Service
-	postCache cache.CacheImages
+	service *service.Service
+	cache   cache.CacheImages
+	url     string
 }
 
-func NewHandler(service *service.Service, postCache cache.CacheImages) *Handler {
-	return &Handler{service: service, postCache: postCache}
+func NewHandler(service *service.Service, cache *cache.Cache, url string) *Handler {
+	return &Handler{service: service, cache: cache, url: url}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
-	//router.LoadHTMLFiles("../templates/registration.html", "../templates/authorization.html", "../templates/pictures.html")
 	router.LoadHTMLGlob("../templates/*")
 	fs := http.FileSystem(http.Dir("../static"))
 	router.StaticFS("static/", fs)
-
-	// base := router.Group("/")
-	// {
-	// 	base.GET("/", h.root)
-	// }
 
 	auth := router.Group("/auth")
 	{
@@ -67,9 +62,3 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	return router
 }
-
-// GET FUNCIONS
-// func (handler *Handler) root(c *gin.Context) {
-// 	c.Redirect(http.StatusMovedPermanently, "https://imagepromts.ru/pictures/")
-// 	logrus.Error("redirect")
-// }

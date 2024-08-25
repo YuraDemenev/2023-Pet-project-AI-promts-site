@@ -12,7 +12,6 @@ const (
 	userCtx             = "userId"
 	anonymId            = 1
 	adminId             = 2
-	domen               = "imagepromts.ru"
 )
 
 func (h *Handler) userIdentity(c *gin.Context) {

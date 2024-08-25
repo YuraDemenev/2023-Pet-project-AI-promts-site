@@ -16,7 +16,8 @@ import (
 )
 
 type PicturesPostgres struct {
-	db *sqlx.DB
+	db          *sqlx.DB
+	cacheClient cache.CacheImages
 }
 
 // var (
@@ -35,15 +36,15 @@ const (
 	</svg>`
 )
 
-func NewPicturesPostgres(db *sqlx.DB) *PicturesPostgres {
-	return &PicturesPostgres{db: db}
+func NewPicturesPostgres(db *sqlx.DB, cache cache.CacheImages) *PicturesPostgres {
+	return &PicturesPostgres{db: db, cacheClient: cache}
 }
 
 // Help function that create a div for other functions. Get urls and return div data
 func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
 
 	urlsHtml = make([]string, len(urls))
-	//<img id="picture" src='../static/images/lowQuality/%s'
+	//<img id="picture" src='../images/lowQuality/%s'
 
 	//For last we need to add hx-trigger='revealed' for load new image when user scroll down
 	for i, str := range urls {
@@ -52,9 +53,9 @@ func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlF
 		if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows {
 			page := (lastImageId + countOfImages) / countOfImages
 			locStr = fmt.Sprintf(`
-			<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+			<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 				<a hx-post="/pictures/info=%s" hx-headers='{"url": "%s"}'  hx-target='#overlay'>
-					<img id="picture" src='../static/images/lowQuality/%s' loading='lazy' hx-post='https://imagepromts.ru/%s?page=%d' 
+					<img id="picture" src='../images/lowQuality/%s' loading='lazy' hx-post='{{.URL}}/%s?page=%d' 
 					hx-trigger='revealed' hx-swap='beforebegin' hx-headers='{"promt": "%s", "lastImageId": "%d"}' hx-target='#%s'/>
 				</a>
 			</div>`, str, str, str, str, urlForPost, page, promt, lastImageId+countOfImages, target)
@@ -64,9 +65,9 @@ func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlF
 
 		} else {
 			locStr = fmt.Sprintf(`
-		<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+		<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
-				<img id="picture" src='../static/images/lowQuality/%s' loading='lazy'>
+				<img id="picture" src='../images/lowQuality/%s' loading='lazy'>
 			</a>
 		</div>`, str, str, str, str)
 		}
@@ -81,7 +82,7 @@ func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlF
 func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
 
 	urlsHtml = make([]string, len(urls))
-	//<img id="picture" src='../static/images/lowQuality/%s'
+	//<img id="picture" src='../images/lowQuality/%s'
 
 	//For last we need to add hx-trigger='revealed' for load new image when user scroll down
 	for i, str := range urls {
@@ -90,9 +91,9 @@ func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost s
 		if i == len(urls)-1 && len(urls) == countOfImages && lastImageId+countOfImages < countRows {
 			page := (lastImageId + countOfImages) / countOfImages
 			locStr = fmt.Sprintf(`
-			<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+			<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 				<a hx-post="/pictures/info=%s" hx-headers='{"url": "%s"}'  hx-target='#overlay'>
-					<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy' hx-post='https://imagepromts.ru/%s?page=%d' 
+					<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy' hx-post='{{.URL}}/%s?page=%d' 
 					hx-trigger='revealed' hx-swap='beforebegin' hx-headers='{"promt": "%s", "lastImageId": "%d"}' hx-target='#%s'/>
 				</a>
 			</div>`, str, str, str, urlForPost, page, promt, lastImageId+countOfImages, target)
@@ -102,7 +103,7 @@ func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost s
 
 		} else {
 			locStr = fmt.Sprintf(`
-		<div class='blur-load' style='background-image: url(../static/images/20pxImage/%s)'>
+		<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
 				<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy'>
 			</a>
@@ -128,7 +129,7 @@ func (r *PicturesPostgres) GetUserName(id int) (string, error) {
 }
 
 // Func that we use when user scroll down at home page
-func (r *PicturesPostgres) GetNewImages(lastImageId int, postCache cache.CacheImages) (urlsHtml []string, imageNums []string, err error) {
+func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, imageNums []string, err error) {
 	urls := make([]string, countOfGetImages)
 
 	//Get count of rows for stop add hx-trigger='revealed' => stop load images
@@ -173,12 +174,12 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int, postCache cache.CacheIm
 	urlsRedis := make([]string, len(urlsHtml))
 	lastId := 0
 
-	//../static/images/20pxImage/202310011511588352.jpg
+	//../images/20pxImage/202310011511588352.jpg
 	for _, v := range urls {
 		if v == "" {
 			break
 		}
-		check := postCache.CheckExist(v)
+		check := r.cacheClient.CheckExist(v)
 		if !check {
 			urlsRedis[lastId] = v
 			lastId++
@@ -193,7 +194,7 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int, postCache cache.CacheIm
 			go func(url string) {
 				defer wg.Done()
 				//open image
-				file, err := os.ReadFile("../static/images/lowQuality/" + url)
+				file, err := os.ReadFile("../images/lowQuality/" + url)
 				if err != nil {
 					logrus.Errorf("Cant open file: %s", url)
 					return
@@ -217,16 +218,7 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int, postCache cache.CacheIm
 
 				stringBytes := base64.StdEncoding.EncodeToString(imageBytes)
 
-				postCache.SetImageBytes(url, stringBytes)
-
-				// sliceBytes, err := os.ReadFile("../static/images/lowQuality/" + url)
-				// if err != nil {
-				// 	logrus.Errorf("Cant open file: %s", url)
-				// 	return
-				// }
-
-				// stringBytes := base64.StdEncoding.EncodeToString(sliceBytes)
-				// postCache.SetImageBytes(url, stringBytes)
+				r.cacheClient.SetImageBytes(url, stringBytes)
 
 			}(v)
 		}
@@ -241,11 +233,7 @@ func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, 
 
 	var countLikes int
 	var promt string
-	// query_ := fmt.Sprintf(`
-	// SELECT promts.title, images.like_count
-	// FROM %s,%s
-	// WHERE promts.image_url LIKE '%s'
-	// AND promts.image_url = images.image_url`, promtsTable, imagesTable, imageUrl)
+
 	query_ := fmt.Sprintf(`
 	SELECT title, like_count 
 	FROM %s 
@@ -273,21 +261,6 @@ func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, 
 		likeSVG = likeFill
 	}
 
-	//SQL query
-	// rows, err := r.db.Query(query_)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// for rows.Next() {
-	// 	//Get all promts
-	// 	var promt string
-	// 	if err := rows.Scan(&promt, &countLikes); err != nil {
-	// 		return "", err
-	// 	}
-	// 	promts += promt + " "
-	// }
-
 	htmlStr := fmt.Sprintf(`
 	<div id="overDiv">
 		<style>
@@ -295,7 +268,7 @@ func (r *PicturesPostgres) GetImagePromts(imageUrl string, userId int) (string, 
 		</style>
 		<div id="gridInOverDiv">
 			<div id="imageContainerInOverDiv">
-				<img id="imgInOverDiv" src='../static/images/highQuality/%s'/>
+				<img id="imgInOverDiv" src='../images/highQuality/%s'/>
 			</div>
 			<div id="textContainerInOverDiv">
 				

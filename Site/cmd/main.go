@@ -12,22 +12,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-const IpAdress = "imagepromts.ru"
-
-// var (
-// 	postCache cache.CacheImages = cache.NewRedisCache(IpAdress, 0, time.Hour)
-// )
-
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 	err := initConfig()
 	if err != nil {
 		logrus.Fatalf("initializing config error: %s", err.Error())
 	}
-
-	// if err := godotenv.Load(); err != nil {
-	// 	logrus.Fatalf("error loading env variables: %s", err.Error())
-	// }
+	//Get url
+	url := viper.GetString("url")
 
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
@@ -42,11 +34,27 @@ func main() {
 		logrus.Fatalf("failed to initialize db: %s", err.Error())
 	}
 
-	postCache := cache.NewRedisCache("localhost:6379", 0, time.Hour)
+	//Connect to Redis
+	//Read data from cofig.yml and send as RedisConfig to NewPostgresDB
+	//and send n minutes as "data live"
+	redisCache := cache.NewRedisCache(cache.RedisConfig{
+		Host: viper.GetString("redis.host"),
+		DB:   viper.GetInt("redis.db"),
+	})
 
-	repos := repository.NewRepository(db)
+	redis := cache.NewCache(redisCache, time.Minute*30)
+	//Инициализируем repository (сервис через который
+	//будут запускаться функции взаимодействующие с бд)
+	repos := repository.NewRepository(db, redis)
+
+	//Инициализируем service (через него будут запускаться
+	//Промежуточные функции и будет запускаться взаимодействие с БД
+	//через repository)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services, postCache)
+
+	//Инициализируем hadlers (пути по которым можно отправлять запросы)
+	handlers := handler.NewHandler(services, redis, url)
+	//Инициализируем сервер
 	server := new(site.Server)
 
 	err = server.Run(viper.GetString("port"), handlers.InitRoutes())
