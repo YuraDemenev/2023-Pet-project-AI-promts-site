@@ -1,3 +1,4 @@
+ENGLISH
 # 2023-Pet-project-AI-promts-site
 on my site you can upload images, click on images and view the promts you used to create them, or like the images you like. If you have registered you can view your profile where you can see all the images you have uploaded and liked in 2 different columns and additional information. You can use search for find image with special promt.
 
@@ -5,13 +6,36 @@ On the site you can upload or view images as an unregistered user, but you can't
 Interesting implementation points:
 - Password hashing
 - infinite scroll down
-- use of Middleware
+- use of Middleware 
 - use of HTMX to change elements on the site without reloading the page
 - Image optimization (low quality images are loaded on the homepage for optimization, when the user clicks on the image the original image is loaded.
 - Lazy loading when loading images (if traffic is slow a 20px blurry image is loaded)
 - GIN framework 
 - database postgres 
-- Bootstrap for CSS 
+- Bootstrap for CSS
+- Redis for caching images
+- VPS server on linux ubuntu
+- Nginx and SSL for site work
 
-Open site:
-If you want to open a site on your computer you need PostgreSQL to create a database there is init.up.sql in schema/ it will create the same database.!!! NOTE FOR THE SITE TO WORK YOU NEED ANONYM USER WITH ID=1 !!!. you can change the id of anonym in pkg\handler\middleware.go it is const you can change it.
+Site link: https://imagepromts.ru/
+
+РУССКИЙ
+# 2023-Pet-project-AI-promts-site
+На моем сайте вы можете загружать изображения, нажимать на них и просматривать промты, которые вы использовали для их создания, или ставить лайки понравившимся вам изображениям. Если вы зарегистрировались, вы можете просмотреть свой профиль, где вы можете увидеть все загруженные и понравившиеся вам изображения в двух разных колонках и дополнительную информацию. Вы можете воспользоваться поиском, чтобы найти изображение со специальным промтом.
+
+На сайте вы можете загружать и просматривать изображения как незарегистрированный пользователь, но не можете ставить лайки или заходить в свой профиль.
+Интересные моменты реализации:
+- хеширование пароля
+- бесконечная прокрутка вниз
+- использование Middleware 
+- использование HTMX для изменения элементов на сайте без перезагрузки страницы
+- Оптимизация изображений (изображения низкого качества загружаются на главную страницу для оптимизации, когда пользователь нажимает на изображение, загружается оригинальное изображение.
+- Ленивая загрузка при загрузке изображений (при медленном трафике загружается 20px размытое изображение)
+- фреймворк GIN 
+- база данных postgres 
+- Bootstrap для CSS
+- Redis для кэширования изображений
+- VPS сервер на linux ubuntu
+- Nginx и SSL для работы сайта
+
+Site link: https://imagepromts.ru/
