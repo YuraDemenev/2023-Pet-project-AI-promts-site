@@ -4,6 +4,7 @@ on my site you can upload images, click on images and view the promts you used t
 
 On the site you can upload or view images as an unregistered user, but you can't like them or access your profile.
 Interesting implementation points:
+- The site was loaded using docker compose and docker containers
 - Password hashing
 - infinite scroll down
 - use of Middleware 
@@ -19,12 +20,15 @@ Interesting implementation points:
 
 Site link: https://imagepromts.ru/
 
+To raise the site locally you need to move the following files to an empty folder: docker-compose.yml, images folder, config folder, initdb folder, then write docker-compose up in the console.
+
 РУССКИЙ
 # 2023-Pet-project-AI-promts-site
 На моем сайте вы можете загружать изображения, нажимать на них и просматривать промты, которые вы использовали для их создания, или ставить лайки понравившимся вам изображениям. Если вы зарегистрировались, вы можете просмотреть свой профиль, где вы можете увидеть все загруженные и понравившиеся вам изображения в двух разных колонках и дополнительную информацию. Вы можете воспользоваться поиском, чтобы найти изображение со специальным промтом.
 
 На сайте вы можете загружать и просматривать изображения как незарегистрированный пользователь, но не можете ставить лайки или заходить в свой профиль.
 Интересные моменты реализации:
+- Сайт был загружен с помощью docker compose и docker containers
 - хеширование пароля
 - бесконечная прокрутка вниз
 - использование Middleware 
@@ -39,3 +43,5 @@ Site link: https://imagepromts.ru/
 - Nginx и SSL для работы сайта
 
 Site link: https://imagepromts.ru/
+
+Чтобы поднять сайт локально нужно переместить в пустую папку следующие файлы:docker-compose.yml, папку images,папку config,паку initdb, затем прописать в консоли docker-compose up
