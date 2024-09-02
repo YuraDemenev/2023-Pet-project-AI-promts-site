@@ -19,6 +19,7 @@ Interesting implementation points:
 - Nginx and SSL for site work
 
 Site link: https://imagepromts.ru/
+
 To raise the site locally you need to move the following files to an empty folder: docker-compose.yml, images folder, config folder, initdb folder, then write docker-compose up in the console.
 
 РУССКИЙ
@@ -42,4 +43,5 @@ To raise the site locally you need to move the following files to an empty folde
 - Nginx и SSL для работы сайта
 
 Site link: https://imagepromts.ru/
+
 Чтобы поднять сайт локально нужно переместить в пустую папку следующие файлы:docker-compose.yml, папку images,папку config,паку initdb, затем прописать в консоли docker-compose up
