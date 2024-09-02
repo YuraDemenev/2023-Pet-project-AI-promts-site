@@ -5,6 +5,7 @@ on my site you can upload images, click on images and view the promts you used t
 On the site you can upload or view images as an unregistered user, but you can't like them or access your profile.
 Interesting implementation points:
 - The site was loaded using docker compose and docker containers
+- Redis for caching images
 - Password hashing
 - infinite scroll down
 - use of Middleware 
@@ -14,7 +15,6 @@ Interesting implementation points:
 - GIN framework 
 - database postgres 
 - Bootstrap for CSS
-- Redis for caching images
 - VPS server on linux ubuntu
 - Nginx and SSL for site work
 
@@ -29,6 +29,7 @@ To raise the site locally you need to move the following files to an empty folde
 На сайте вы можете загружать и просматривать изображения как незарегистрированный пользователь, но не можете ставить лайки или заходить в свой профиль.
 Интересные моменты реализации:
 - Сайт был загружен с помощью docker compose и docker containers
+- Redis для кэширования изображений
 - хеширование пароля
 - бесконечная прокрутка вниз
 - использование Middleware 
@@ -38,7 +39,6 @@ To raise the site locally you need to move the following files to an empty folde
 - фреймворк GIN 
 - база данных postgres 
 - Bootstrap для CSS
-- Redis для кэширования изображений
 - VPS сервер на linux ubuntu
 - Nginx и SSL для работы сайта
 
