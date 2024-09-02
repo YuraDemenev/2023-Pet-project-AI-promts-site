@@ -24,6 +24,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	fs := http.FileSystem(http.Dir("../static"))
 	router.StaticFS("static/", fs)
 
+	fs = http.FileSystem(http.Dir("../images"))
+	router.StaticFS("images/", fs)
+
 	auth := router.Group("/auth")
 	{
 		auth.GET("/sign-up", h.registration)

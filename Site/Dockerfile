@@ -15,10 +15,11 @@ FROM debian:bookworm
 WORKDIR /
 
 COPY --from=build-stage /serve /serve
-# COPY ./config /config
 COPY ./templates /templates
 COPY ./static /static
 
 EXPOSE 8080
 
 ENTRYPOINT ["/serve"]
+
+

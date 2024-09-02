@@ -438,7 +438,7 @@ func profileGetDivForImages(urls []string, lastImageId int, countRows int, urlFo
 			locStr = fmt.Sprintf(`
 		<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
-			<img id="picture" src='../images/lowQuality/%s' loading='lazy'>
+			<img id="picture" src='../images/lowQuality/%s' loading='lazy' />
 			</a>
 		</div>`, str, str, str, str)
 		}

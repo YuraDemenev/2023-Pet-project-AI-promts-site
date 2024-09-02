@@ -1,17 +1,37 @@
 services:
+  postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: 260203
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "SiteWatchImage"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d SiteWatchImage" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  redis:
+    image: redis:alpine
+
   site:
-    image: ai_prompts_site
+    image: yurademenev/ai_prompts_site
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - 8080:8080
     volumes:
       - ./config:/config
       - ./images:/images
 
-  postgres:
-    image: postgres:alpine
-    environment:
-      - POSTGRES_PASSWORD: 260203
-    volumes:
-      - ./data:/var/lib/postgresql/data
-  redis:
-    image: redis:alpine
+# docker exec -it 9ec1a8ba39e0 bash
+# psql -U postgres

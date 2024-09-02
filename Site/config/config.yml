@@ -9,3 +9,7 @@ db:
   dbname: "SiteWatchImage"
   sslmode: "disable"
   password : "260203"
+  
+redis:
+  host: "localhost:6379"
+  db: 0

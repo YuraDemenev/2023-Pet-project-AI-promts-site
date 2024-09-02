@@ -42,10 +42,7 @@ func NewPicturesPostgres(db *sqlx.DB, cache cache.CacheImages) *PicturesPostgres
 
 // Help function that create a div for other functions. Get urls and return div data
 func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlForPost string, promt string, countOfImages int, target string) (urlsHtml []string, err error) {
-
 	urlsHtml = make([]string, len(urls))
-	//<img id="picture" src='../images/lowQuality/%s'
-
 	//For last we need to add hx-trigger='revealed' for load new image when user scroll down
 	for i, str := range urls {
 		locStr := ""
@@ -67,7 +64,7 @@ func getStandartDivForImages(urls []string, lastImageId int, countRows int, urlF
 			locStr = fmt.Sprintf(`
 		<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
-				<img id="picture" src='../images/lowQuality/%s' loading='lazy'>
+				<img id="picture" src='../images/lowQuality/%s' loading='lazy'/>
 			</a>
 		</div>`, str, str, str, str)
 		}
@@ -105,7 +102,7 @@ func getDivForImages(urls []string, lastImageId int, countRows int, urlForPost s
 			locStr = fmt.Sprintf(`
 		<div class='blur-load' style='background-image: url(../images/20pxImage/%s)'>
 			<a hx-post="/pictures/info=%s" hx-headers='{"url":"%s"}'  hx-target='#overlay'>
-				<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy'>
+				<img id="picture" src='data:image/jpg;base64,{{.Bytes}}' loading='lazy'/>
 			</a>
 		</div>`, str, str, str)
 		}
@@ -174,7 +171,6 @@ func (r *PicturesPostgres) GetNewImages(lastImageId int) (urlsHtml []string, ima
 	urlsRedis := make([]string, len(urlsHtml))
 	lastId := 0
 
-	//../images/20pxImage/202310011511588352.jpg
 	for _, v := range urls {
 		if v == "" {
 			break
